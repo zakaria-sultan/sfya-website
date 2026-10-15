@@ -40,4 +40,14 @@ Configure `sharedyouth.com` and `www.sharedyouth.com` only in the dedicated SFYA
 
 Security headers are in `next.config.ts`. The CSP permits inline Next.js hydration scripts and inline styles used by Next Image and Framer Motion; it blocks framing, plugins and external asset origins. A nonce-based CSP would require dynamic rendering and should be implemented alongside deployment-specific caching requirements if needed.
 
-Before release, check navigation and content at phone, tablet and desktop widths, keyboard navigation, reduced motion, contact links, profile download, 404, social sharing metadata and production response headers.
+Before release, check navigation and content at phone, tablet and desktop widths, keyboard navigation, reduced motion, contact links, contact-form delivery, 404, social sharing metadata and production response headers.
+
+## SMTP setup
+
+1. Open the **SFYA mailbox provider’s** outgoing mail settings and copy the SMTP hostname, TLS port and mailbox username. Do not use another project’s account or credentials.
+2. Fill `.env.local` using `.env.example`: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER=info@sharedyouth.com`, and `SMTP_PASSWORD`. Use the mailbox password or an app password if the provider requires one. Quote passwords with double quotes; escape literal `$` as `\$` because Next.js expands environment variables. Keep this file local and ignored by Git.
+3. Run `npm run smtp:check`. This checks the secure SMTP connection and authentication without sending a message or printing credentials. Successful authentication does not guarantee final inbox delivery.
+4. Restart `npm run dev`, submit an enquiry at `/contact`, and confirm it arrives at `info@sharedyouth.com`. Check spam if necessary. Replying should address the visitor’s email.
+5. For hosting, add the same four values in the **dedicated SFYA Vercel project’s** environment settings, then redeploy. Paste the raw password in Vercel without `.env` quoting or escaping. Local `.env.local` settings are not uploaded automatically.
+
+If the check reports missing values, fill them locally; never paste the password into chat or commit it. If authentication fails, verify the full mailbox username and provider password requirements. Keep TLS certificate verification enabled. Use the mail provider’s existing SPF/DKIM configuration for deliverability; this setup does not change DNS or email routing.
