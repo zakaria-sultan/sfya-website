@@ -24,13 +24,17 @@ Node.js 20.9 or later is required. Pages render on the server; primary text is v
 - `components/`: shared navigation, footer and section components.
 - `app/globals.css`: responsive brand design system.
 - `public/sfya-logo.png` and `public/sfya-icon.png`: cropped from the supplied enhanced logo card. Keep `sfya-logo-card.png` as the source.
-- `public/SFYA-Organizational-Profile-2026.pdf`: downloadable source profile. Its final page contains legacy contact placeholders; the website uses the updated contact details supplied in the brief.
+- The supplied organizational profile is retained as a source asset; its download links are removed from the public interface.
 
-Contact uses email and phone links. No web form, tracking, database or credentials are required. No submissions are collected or stored by the website. Add server validation, abuse protection and a configured delivery service before introducing a contact form.
+The Contact page includes a form that sends plain-text messages to `info@sharedyouth.com` through SMTP. The sender uses the authenticated SFYA mailbox; the visitor’s email is set as Reply-To. WhatsApp links open `https://wa.me/252615021204`.
+
+Copy `.env.example` to `.env.local` for local development and set `SMTP_HOST`, `SMTP_PORT` (465 or 587), `SMTP_USER` and `SMTP_PASSWORD` using the SFYA mailbox provider’s settings. Configure the same variables in the dedicated SFYA Vercel project and redeploy. Never commit passwords or use `NEXT_PUBLIC_` variables for SMTP. No live email delivery is possible until these are configured.
+
+The endpoint checks origin, input types and lengths, header control characters, body size and a honeypot. Messages are sent as plain text and not saved in the application. It includes a best-effort in-memory limit of five attempts per 15 minutes per instance; for a public high-traffic deployment, configure a shared rate limit or Vercel Firewall rule for `/api/contact`. The mail provider handles delivery and retention. Errors never expose credentials and the form reports success only after SMTP accepts the recipient.
 
 ## Deployment
 
-Deploy this repository to a separate SFYA Vercel project using the standard Next.js preset (`npm run build`). No environment variables are required. This repository must remain isolated from all KeydTech projects, accounts and credentials.
+Deploy this repository to a separate SFYA Vercel project using the standard Next.js preset (`npm run build`). SMTP environment variables are required for contact-form delivery. This repository must remain isolated from all KeydTech projects, accounts and credentials.
 
 Configure `sharedyouth.com` and `www.sharedyouth.com` only in the dedicated SFYA project. Preserve existing email MX records. Canonical URLs, sitemap and social metadata use `https://sharedyouth.com`.
 

@@ -36,3 +36,5 @@ export const contact = {
   email:"info@sharedyouth.com",
   website:"sharedyouth.com"
 };
+
+export const whatsappUrl = `https://wa.me/${contact.phone.replace(/\D/g, "")}`;

@@ -1,0 +1,24 @@
+const ts=require(process.cwd()+'/node_modules/typescript');
+const fs=require('node:fs');const vm=require('node:vm');const assert=require('node:assert/strict');
+const source=ts.transpileModule(fs.readFileSync('app/api/contact/route.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
+let sent,fail=false;const env={};
+const context={exports:{},require(id){if(id==='next/server')return {NextResponse:{json:(body,{status})=>({status,body})}};if(id==='nodemailer')return {createTransport:()=>({sendMail:async data=>{if(fail)throw Error('private provider detail');sent=data;return {accepted:['info@sharedyouth.com']}},close(){}})};if(id==='@/lib/content')return {contact:{email:'info@sharedyouth.com'}};throw Error(id)},process:{env},Buffer,Uint8Array,URL,Date,Map};
+vm.runInNewContext(source,context);const post=context.exports.POST;
+const valid={name:'Test Visitor',email:'visitor@example.com',subject:'Partnership enquiry',message:'Please send programme information.',website:''};
+const req=(body,origin='https://sharedyouth.com')=>new Request('https://sharedyouth.com/api/contact',{method:'POST',headers:{'content-type':'application/json',origin},body:typeof body==='string'?body:JSON.stringify(body)});
+(async()=>{
+assert.equal((await post(req(valid,'https://other.example'))).status,403);
+assert.equal((await post(req('{'))).status,400);
+assert.equal((await post(req({...valid,email:'invalid'}))).status,400);
+assert.equal((await post(req({...valid,name:'Visitor\r\nBcc: victim@example.com'}))).status,400);
+assert.equal((await post(req({...valid,message:'short'}))).status,400);
+assert.equal((await post(req({...valid,website:'spam'}))).status,400);
+assert.equal((await post(req('x'.repeat(24001)))).status,413);
+assert.equal((await post(req(valid))).status,503);
+Object.assign(env,{SMTP_HOST:'smtp.example.com',SMTP_USER:'info@sharedyouth.com',SMTP_PASSWORD:'test-only'});
+assert.equal((await post(req(valid))).status,200);assert.equal(sent.to,'info@sharedyouth.com');assert.equal(sent.replyTo.address,'visitor@example.com');assert.equal(sent.from.address,'info@sharedyouth.com');assert.ok(!sent.html);
+fail=true;const failure=await post(req(valid));assert.equal(failure.status,502);assert.ok(!failure.body.message.includes('private provider detail'));fail=false;
+for(let i=0;i<3;i++)assert.equal((await post(req(valid))).status,200);
+assert.equal((await post(req(valid))).status,429);
+console.log('PASS: origin, malformed body, validation, header injection, honeypot, body limit, missing config, SMTP success/failure, fixed recipient, Reply-To and rate limit.');
+})();
