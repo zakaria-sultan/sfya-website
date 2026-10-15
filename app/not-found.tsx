@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function NotFound(){return <section className="section"><div className="container-shell"><p className="eyebrow">404 · Page not found</p><h1 className="section-title">Let’s find your way.</h1><p className="body-copy">The page you’re looking for may have moved. Explore our work or return to the homepage.</p><div className="mt-8 flex flex-wrap gap-4"><Link className="button button-gold" href="/">Back to home</Link><Link className="button" href="/programmes">Our programmes ↗</Link></div></div></section>}

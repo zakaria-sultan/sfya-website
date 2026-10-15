@@ -1,0 +1,1 @@
+export default function PageHero({eyebrow,title,body}:{eyebrow:string;title:string;body:string}){return <section className="page-hero"><div className="container-shell relative"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p className="hero-body">{body}</p><div className="hero-rule" aria-hidden="true"><span/> SFYA / A shared future starts with us</div></div></section>}
